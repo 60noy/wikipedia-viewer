@@ -3,6 +3,8 @@ import {ListItem,List} from 'material-ui/List';
 import TextField from 'material-ui/TextField';
 import fetchJsonp from 'fetch-jsonp';
 import _ from 'lodash';
+import DataList from './DataList';
+
 const styles={
   container: {
     flex:1,
@@ -13,8 +15,11 @@ const styles={
   title:{
     marginTop:'4%',
     marginBottom:'4%',
-    fontSize:'3em',
-    textAlign:'center'
+    fontSize:'3.5vw',
+    textAlign:'center',
+    fontFamily:'Roboto',
+    fontWeight: 300,
+    textDecoration:'underline'
   },
   search:{
     marginLeft:'20%',
@@ -24,16 +29,15 @@ const styles={
 
 export default class Main extends Component {
   constructor(props) {
-    super(props);
+    super(props)
     // input: the value entered in the search box
     // data: the data from the server from Wikipedia API
+    // errMsg: error message to display in the text box if there was an error
     this.state={
       input :'',
       data:[],
       errMsg: ''
-
     }
-
   }
 
   // gets the json data and creates an array with keys of title, text and url for every list item
@@ -47,7 +51,6 @@ export default class Main extends Component {
      ({title,text,url})
   ))
   this.setState({data: fetchedData})
-
 }
 
   // GET to Wikipedia API with the input value
@@ -59,28 +62,18 @@ export default class Main extends Component {
       .then(data => this.fetchData(data))
       .catch((err) => this.showErrorMessage(err))
       :
-      this.setState({data: ''})}
+      this.setState({data: []})}
   }
 
+  // displays error message if the fetch returned error
   showErrorMessage = (err) => {
     this.setState({errMsg: err})
   }
 
-  componentDidMount(){
-    let data = this.state.data
-    this.setState({data: this.fetchData(data)})
-  }
-
   // gets the input value, calls to handleData if the input is valid
   handleInputChange = (e,input) => {
-    if (!!input) {
       this.setState({input})
       this.handleData(input)
-    }
-    else
-    this.setState({input: '', data:[]})
-
-
   }
 
   // navigate the user to the url of the wikipedia item
@@ -89,8 +82,8 @@ export default class Main extends Component {
   }
 
   render() {
-    let listStyle =  {border: '1px solid grey'}
     let data = this.state.data
+    let input = this.state.input
     return (
       <div style={styles.container}>
         <div style={styles.title}>
@@ -102,23 +95,17 @@ export default class Main extends Component {
           onChange={this.handleInputChange}
           value={this.state.input}
           errorText={this.state.errMsg}
+          fullWidth={true}
         />
-        <List>
-          {data && (this.state.data.map(
-            (item,index) =>
-              <ListItem
-               onTouchTap={() => this.redirect(item.url)}
-               primaryText={item.title}
-               secondaryText={item.text}
-               key={index}
-             />
-          ))
+
+        {!!input.length>0  &&
+          <DataList
+            data={data}
+            onItemTap={this.redirect}
+          />
         }
-        </List>
       </div>
     </div>
   );
   }
-
-
 }
